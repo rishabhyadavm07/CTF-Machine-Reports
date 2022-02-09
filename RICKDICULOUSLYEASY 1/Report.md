@@ -171,7 +171,143 @@ signed in and found 2 files named flag and pub directory
 while reading the nmap scan report found out a port 13337 which is providing a flag : 
 `FLAG:{TheyFoundMyBackDoorMorty}`-10Points
 
+Rishabh Yadav | 09-02-2022
+
+started with a new approach 
+went on the ip with port 80 and found a wierd image a child named morris
+
+maybe we found the username to bruteforce some services - "morty"
+
+tried accessing the robot file on the web server and found -
+```
+They're Robots Morty! It's ok to shoot them! They're just Robots!
+
+/cgi-bin/root_shell.cgi
+/cgi-bin/tracertool.cgi
+/cgi-bin/*
+```
+tried accessing the cgi-bin directory and that is a 403
+
+root-shell.cgi - ah that was a prank done by a user on morty
+
+tracertool.cgi - I think what this does is execute a traceroute commad on the machine and this can be changed to code execution
+ 
+decided to run a fuzzer on the main website -
+```
+/.hta                 (Status: 403) [Size: 213]
+/.htpasswd            (Status: 403) [Size: 218]
+/.htaccess            (Status: 403) [Size: 218]
+/cgi-bin/             (Status: 403) [Size: 217]
+/index.html           (Status: 200) [Size: 326]
+/passwords            (Status: 301) [Size: 234] [--> http://10.0.2.4/passwords/]
+/robots.txt           (Status: 200) [Size: 126]   
+```
+
+tried going to passwords directory and found 2 files named - flag.txt, passwords.html
+flag.txt gives - `FLAG{Yeah d- just don't do it.}` - 10 Points
+
+and 
+
+passwords.html gives - `Wow Morty real clever. Storing passwords in a file called passwords.html? You've really done it this time Morty. Let me at least hide them.. I'd delete them entirely but I know you'd go bitching to your mom. That's the last thing I need. `
+
+and upon viewing the source code : found the commented password : `<!--Password: winter-->`
+
+tried accessing the morty account via ssh on port 22222 with the password winter that we got previously  
+
+just decided to look into the walkthrough and found that I missed a port to do recon on that was 60000
+
+went as it was done in walkthrough fired up netcat and connected to the port 60000 and boom 
+got the shell with root privs and it spawns us in the root directory and there was a flag file that gives us the next flag 
+`FLAG{Flip the pickle Morty!}` - 10 Points
+
+happiness comes to an end
+WE CANNOT MOVE FROM THE DIRECTORY BLACKHOLE and cannot perform any actions
+
+-----Taking a sneakpeak----- 
+
+got a hint that we can execute comands with the traceroute utility hosted on the cgi-bin folder 
+
+got the users from /etc/passwd file 
+made a users.txt file to put into hydra to bruteforce the username for the password "winter"
+
+got the username - summer
+
+got the flag :  1   FLAG{Get off the high road Summer!} - 10 Points
+
+traversed all the files and directories in the home folder
+
+found 2 inresting files including a password protected zip file and jpg image file in directory Morty 
+moved them to local machine for cracking of password and inspection of the files 
+
+```
+scp -p 22222 Summer@10.0.2.4:/home/Morty/<Files> /tmp/
+```
+
+tried to crack the password of the zip file via zip2john but no luck
+
+after dropping the zip file a random thought striked my mind of using binwalk on the jpg file 
+
+and here is the output: 
+```
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             JPEG image data, JFIF standard 1.01
+30            0x1E            TIFF image data, big-endian, offset of first image directory: 8
+192           0xC0            Unix path: /home/Morty/journal.txt.zip. Password: Meeseek
+
+```
+
+last line gives us the output of the zip file that is = `Meeseek`
+opened the locked zip file and the contents are :
+```
+Monday: So today Rick told me huge secret. He had finished his flask and was on to commercial grade paint solvent. He spluttered something about a safe, and a password. Or maybe it was a safe password... Was a password that was safe? Or a password to a safe? Or a safe password to a safe?
 
 
 
+Anyway. Here it is:
 
+
+
+FLAG: {131333} - 20 Points 
+
+```
+
+copied the safe executable to the home folder of the summer user to execute it 
+
+it prints this up on executing : 
+```
+Past Rick to present Rick, tell future Rick to use GOD DAMN COMMAND LINE AAAAAHHAHAGGGGRRGUMENTS!
+```
+
+then just noticed that the previous flag was somewhat diffrent lets see if it is the flag
+and boom . 
+Now we get diffrent output - 
+```
+decrypt:    FLAG{And Awwwaaaaayyyy we Go!} - 20 Points
+
+Ricks password hints:
+ (This is incase I forget.. I just hope I don't forget how to write a script to generate potential passwords. Also, sudo is wheely good.)
+Follow these clues, in order
+
+
+1 uppercase character
+1 digit
+One of the words in my old bands name.� @
+
+```
+
+so now we need to create a list of passwords 
+`[A-Z][0-9][Word]`
+
+now we run hydra and try to bruteforce the password for the user rick
+
+password for rick is - `P7Curtains`
+
+logged in and went straight in the root directory : 
+
+```
+     1  FLAG: {Ionic Defibrillator} - 30 points
+```
+
+
+-----End-----
