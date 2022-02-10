@@ -673,3 +673,7 @@ No printers returned.
 enum4linux complete on Thu Feb 10 01:16:27 2022
 
 ```
+
+-----Stucked -----
+
+read some walkthroughs and learned a important point to solve CTFs that is 
